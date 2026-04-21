@@ -1,0 +1,22 @@
+{
+  "name": "637vib Sales Hub — VIB Credit Team",
+  "short_name": "637vib Hub",
+  "description": "Hệ thống Phòng Sale Năng Lực cho đội tín dụng VIB. AI phân loại khách hàng, kịch bản bán hàng, dashboard real-time.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#080a0f",
+  "theme_color": "#080a0f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

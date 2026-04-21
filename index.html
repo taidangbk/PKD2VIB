@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080a0f">
+<meta name="description" content="637vib Sales Hub — Hệ thống Phòng Sale Năng Lực cho đội tín dụng VIB. AI phân loại khách hàng, kịch bản bán hàng, dashboard real-time.">
+<title>637vib Hub v2.37 — Final Strategic Leader</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ========== LOGIN OVERLAY ========== -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">VIB</div>
+    <div class="login-title">637vib Sales Hub</div>
+    <div class="login-sub">Hệ thống Phòng Sale Năng Lực<br>Đăng nhập để bắt đầu</div>
+    <button class="login-btn" id="btn-google-login" onclick="handleGoogleLogin()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 001 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Đăng nhập bằng Google
+    </button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-footer">Powered by Firebase Authentication</div>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="app" style="display:none">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">VIB</div>
+      <div><div class="header-title">637vib Sales Hub <span style="font-size: 10px; color: var(--gold2); opacity: 0.7; cursor: pointer;" onclick="if(confirm('Bạn muốn làm mới toàn bộ hệ thống?')){ location.reload(true); }">v2.37 (Strategic Leader)</span></div><div class="header-sub" id="header-role-badge">VIB Credit Team</div></div>
+    </div>
+    <div class="header-right">
+      <div class="header-time" id="clock"></div>
+      <img class="user-avatar" id="user-avatar" src="" alt="Avatar" onclick="toggleUserMenu()">
+    </div>
+    <!-- User Dropdown Menu -->
+    <div class="user-menu" id="user-menu">
+      <div style="padding:10px 12px">
+        <div class="user-menu-name" id="menu-user-name">RM</div>
+        <div class="user-menu-email" id="menu-user-email">email@gmail.com</div>
+      </div>
+      <div class="user-menu-divider"></div>
+      <button class="user-menu-item" id="btn-mgr-dashboard" onclick="openDashboard()" style="display:none; color:var(--vib-orange); font-weight:700">📊 Bảng Chỉ Huy (Manager)</button>
+      <button class="user-menu-item" onclick="handleLogout()">🚪 Đăng xuất</button>
+    </div>
+  </header>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn active" data-page="home" onclick="showPage('home')">
+      <span class="nav-icon">🏠</span><span class="nav-label">Trang chủ</span>
+    </button>
+    <button class="nav-btn" data-page="sales" onclick="showPage('sales')">
+      <span class="nav-icon">🎯</span><span class="nav-label">Bán hàng</span>
+    </button>
+    <button class="nav-btn" data-page="classify" onclick="showPage('classify')">
+      <span class="nav-icon">🤖</span><span class="nav-label">Phân loại</span>
+    </button>
+    <button class="nav-btn" data-page="care" onclick="showPage('care')">
+      <span class="nav-icon">💚</span><span class="nav-label">Chăm sóc</span>
+    </button>
+    <button class="nav-btn" data-page="tools" onclick="showPage('tools')">
+      <span class="nav-icon">⚡</span><span class="nav-label">AI Chat</span>
+    </button>
+  </nav>
+
+  <!-- PAGES -->
+  <main class="content">
+
+    <!-- ==================== HOME ==================== -->
+    <div class="page active" id="page-home">
+      <div class="greeting" id="greeting"></div>
+      
+      <div class="daily-card">
+        <div class="daily-title">📋 Checklist hôm nay</div>
+        <div class="checklist" id="checklist"></div>
+      </div>
+
+      <div class="quick-grid">
+        <div class="quick-card" onclick="showPage('sales');openAccordion('cold-call')">
+          <span class="quick-icon">📞</span>
+          <span class="quick-text">Kịch bản<br>gọi điện</span>
+        </div>
+        <div class="quick-card" onclick="showPage('rates')">
+          <span class="quick-icon">💰</span>
+          <span class="quick-text">Bảng<br>lãi suất</span>
+        </div>
+        <div class="quick-card" onclick="showPage('sales');openAccordion('objection')">
+          <span class="quick-icon">🛡️</span>
+          <span class="quick-text">Xử lý<br>từ chối</span>
+        </div>
+        <div class="quick-card" onclick="showPage('classify')">
+          <span class="quick-icon">🤖</span>
+          <span class="quick-text">AI Phân<br>loại KH</span>
+        </div>
+        <div class="quick-card" onclick="showPage('care');openAccordion('referral')">
+          <span class="quick-icon">🤝</span>
+          <span class="quick-text">Xin<br>Referral</span>
+        </div>
+        <div class="quick-card" style="border-color:rgba(243,112,33,0.3)" onclick="showPage('roadmap')">
+          <span class="quick-icon">📅</span>
+          <span class="quick-text" style="color:var(--vib-orange)">Lộ trình<br>Marketing</span>
+        </div>
+        <div class="quick-card" style="border-color:rgba(62,207,142,0.3)" onclick="showPage('report')">
+          <span class="quick-icon">🚀</span>
+          <span class="quick-text" style="color:var(--green)">Nhật ký<br>bán hàng</span>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-calls">0</div>
+          <div class="stat-label">Cuộc gọi</div>
+          <button class="stat-btn" onclick="incrementStat('calls')">+1</button>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-meets">0</div>
+          <div class="stat-label">Cuộc hẹn</div>
+          <button class="stat-btn" onclick="incrementStat('meets')">+1</button>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-files">0</div>
+          <div class="stat-label">Hồ sơ</div>
+          <button class="stat-btn" onclick="incrementStat('files')">+1</button>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-refs">0</div>
+          <div class="stat-label">Referral</div>
+          <button class="stat-btn" onclick="incrementStat('refs')">+1</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SALES PAGE ==================== -->
+    <div class="page" id="page-sales">
+      <h2 class="page-title">🎯 Bán Hàng</h2>
+
+      <div class="accordion" id="cold-call">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-left"><span class="acc-icon">📞</span><span>Kịch bản gọi điện (60s)</span></div>
+          <span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="script-box">
+            <p><b>HOOK (5s):</b></p>
+            <p>"Chào anh/chị <span class="var">[Tên]</span>, em <span class="var">[Tên RM]</span> từ VIB. <span class="var">[Lý do gọi]</span>"</p>
+            <p><b>VALUE (15s):</b></p>
+            <p>"VIB đang có chương trình <span class="var">[X]</span>, giải ngân trong 3 ngày, lãi suất từ <span class="var">[X%]</span>"</p>
+            <p><b>QUALIFY (30s):</b></p>
+            <p>"Anh/chị hiện có nhu cầu vốn cho <span class="var">[mục đích]</span> không ạ?"</p>
+            <p><b>CLOSE (10s):</b></p>
+            <p>"Em xin 20 phút gặp anh/chị. Thứ <span class="var">[X]</span> hay thứ <span class="var">[Y]</span> tiện hơn ạ?"</p>
+          </div>
+          <button class="copy-btn" onclick="copyText(this)">📋 Copy kịch bản</button>
+        </div>
+      </div>
+
+      <div class="accordion" id="spin">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-left"><span class="acc-icon">🎯</span><span>Tư vấn SPIN (gặp mặt)</span></div>
+          <span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="script-box">
+            <p><b>S – Situation:</b></p>
+            <p>"Anh/chị cho em hỏi, nguồn vốn KD hiện tại từ đâu ạ?"</p>
+            <p><b>P – Problem:</b></p>
+            <p>"Anh/chị có gặp khó khăn gì về vòng quay vốn không?"</p>
+            <p><b>I – Implication:</b></p>
+            <p>"Nếu thiếu vốn kéo dài, anh/chị lo ngại điều gì nhất?"</p>
+            <p><b>N – Need-Payoff:</b></p>
+            <p>"Nếu VIB giải ngân trong 3 ngày với lãi <span class="var">[X%]</span>, điều đó giúp gì cho kế hoạch của anh/chị?"</p>
+          </div>
+          <button class="copy-btn" onclick="copyText(this)">📋 Copy kịch bản</button>
+        </div>
+      </div>
+
+      <div class="accordion" id="objection">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-left"><span class="acc-icon">🛡️</span><span>Xử lý 10 từ chối phổ biến</span></div>
+          <span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="obj-list">
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Lãi suất cao quá"</div>
+              <div class="obj-a">✅ So sánh tổng chi phí sở hữu, không chỉ lãi suất. Nêu giá trị: tốc độ giải ngân 3 ngày, hạn mức linh hoạt. "Anh/chị ơi, nếu so tổng chi phí gồm phí + lãi + thời gian, VIB thực ra rẻ hơn đấy ạ."</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Để tôi suy nghĩ đã"</div>
+              <div class="obj-a">✅ "Em hiểu ạ. Anh/chị đang cân nhắc ở điểm nào? Lãi suất, hạn mức hay kỳ hạn? Em giải đáp luôn để anh/chị có đầy đủ thông tin."</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Đang vay bên khác rồi"</div>
+              <div class="obj-a">✅ "Tốt quá! Em có thể đề xuất refinance hoặc bổ sung hạn mức với điều kiện tốt hơn. Anh/chị cho em biết mức lãi hiện tại để em so sánh?"</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Chưa cần vốn"</div>
+              <div class="obj-a">✅ "Dạ em hiểu. Khách hàng thường chuẩn bị hạn mức trước 2-3 tháng. Khi cần là dùng ngay, không mất thời gian hồ sơ."</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "NH X lãi thấp hơn"</div>
+              <div class="obj-a">✅ "Anh/chị cho em hỏi cụ thể? Lãi headline thường khác lãi thực tế sau phí. Em so sánh chi tiết để anh/chị thấy rõ."</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Thủ tục phức tạp"</div>
+              <div class="obj-a">✅ "VIB chỉ cần [X giấy tờ]. Em làm thay hết phần giấy tờ, anh/chị chỉ cần ký."</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Sợ không trả được nợ"</div>
+              <div class="obj-a">✅ "Lo lắng chính đáng ạ. Để em phân tích dòng tiền cùng anh/chị và đề xuất hạn mức + kỳ hạn phù hợp nhất."</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Gửi tài liệu qua email đi"</div>
+              <div class="obj-a">✅ "Em gửi ngay. Nhưng tài liệu không hiện hết được, anh/chị cho em 15 phút giải thích trực tiếp nhé?"</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Tôi không phải người quyết định"</div>
+              <div class="obj-a">✅ "Em hiểu ạ. Vậy ai quyết định? Em gặp cả hai trình bày 1 lần cho tiện."</div>
+            </div>
+            <div class="obj-item" onclick="toggleObj(this)">
+              <div class="obj-q">❌ "Kinh tế khó, chưa muốn vay"</div>
+              <div class="obj-a">✅ "Đúng thách thức. Nhưng DN mạnh tay đầu tư lúc này sẽ chiếm ưu thế khi thị trường phục hồi."</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion" id="pipeline">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-left"><span class="acc-icon">📊</span><span>Pipeline 7 bước &amp; Tỷ lệ</span></div>
+          <span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="pipeline-list">
+            <div class="pipe-step"><span class="pipe-num">1</span><span class="pipe-name">Tìm Lead</span><span class="pipe-rate">100 lead</span></div>
+            <div class="pipe-arrow">↓ 30%</div>
+            <div class="pipe-step"><span class="pipe-num">2</span><span class="pipe-name">Gọi điện</span><span class="pipe-rate">30 cuộc</span></div>
+            <div class="pipe-arrow">↓ 40%</div>
+            <div class="pipe-step"><span class="pipe-num">3</span><span class="pipe-name">Hẹn gặp</span><span class="pipe-rate">12 hẹn</span></div>
+            <div class="pipe-arrow">↓ 60%</div>
+            <div class="pipe-step"><span class="pipe-num">4</span><span class="pipe-name">Tư vấn</span><span class="pipe-rate">7 quan tâm</span></div>
+            <div class="pipe-arrow">↓ 70%</div>
+            <div class="pipe-step"><span class="pipe-num">5</span><span class="pipe-name">Nộp hồ sơ</span><span class="pipe-rate">5 hồ sơ</span></div>
+            <div class="pipe-arrow">↓ 80%</div>
+            <div class="pipe-step"><span class="pipe-num">6</span><span class="pipe-name">Phê duyệt</span><span class="pipe-rate">4 duyệt</span></div>
+            <div class="pipe-arrow">↓</div>
+            <div class="pipe-step done"><span class="pipe-num">7</span><span class="pipe-name">Giải ngân</span><span class="pipe-rate">4 khoản</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== AI CLASSIFY PAGE (NEW) ==================== -->
+    <div class="page" id="page-classify">
+      <h2 class="page-title">🤖 AI Phân Loại Khách Hàng</h2>
+      <p class="page-desc">Nhập thông tin → AI phân loại HOT/WARM/COLD/TIỀM NĂNG kèm kịch bản cá nhân hóa</p>
+
+      <div class="ai-card" style="padding:20px">
+        <div class="form-row">
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">HỌ TÊN KHÁCH *</label>
+            <input type="text" id="cls-name" class="ai-input" style="min-height:42px;margin-top:4px" placeholder="Nguyễn Văn A">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">NGHỀ NGHIỆP / LOẠI KH *</label>
+            <select id="cls-job" class="ai-input" style="min-height:42px;margin-top:4px;padding:0 10px">
+              <option value="Cá nhân (Lương)">Cá nhân (Lương)</option>
+              <option value="Tiểu thương">Tiểu thương</option>
+              <option value="SME (Doanh nghiệp nhỏ)">SME (DN nhỏ)</option>
+              <option value="BĐT (Bất động thế)">BĐT</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">SỐ ĐIỆN THOẠI</label>
+            <input type="tel" id="cls-phone" class="ai-input" style="min-height:42px;margin-top:4px" placeholder="090...">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">EMAIL</label>
+            <input type="email" id="cls-email" class="ai-input" style="min-height:42px;margin-top:4px" placeholder="abc@gmail.com">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">NHU CẦU VAY *</label>
+            <select id="cls-need" class="ai-input" style="min-height:42px;margin-top:4px;padding:0 10px">
+              <option value="Mua nhà">Mua nhà</option>
+              <option value="Vay kinh doanh">Vay kinh doanh</option>
+              <option value="Mua ô tô">Mua ô tô</option>
+              <option value="Tiêu dùng">Tiêu dùng</option>
+              <option value="Chưa rõ">Chưa rõ</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">NGUỒN LEAD *</label>
+            <select id="cls-source" class="ai-input" style="min-height:42px;margin-top:4px;padding:0 10px">
+              <option value="Telesale">Telesale</option>
+              <option value="Referral">Referral</option>
+              <option value="Inbound (KH tự tìm)">Inbound</option>
+              <option value="Zalo OA / Facebook">Zalo OA / Facebook</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">ƯU TIÊN CỦA KHÁCH</label>
+            <select id="cls-priority" class="ai-input" style="min-height:42px;margin-top:4px;padding:0 10px">
+              <option value="Lãi suất thấp">Lãi suất thấp</option>
+              <option value="Giải ngân nhanh">Giải ngân nhanh</option>
+              <option value="Hạn mức cao">Hạn mức cao</option>
+              <option value="Thủ tục đơn giản">Thủ tục đơn giản</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">PHONG CÁCH KHÁCH</label>
+            <select id="cls-style" class="ai-input" style="min-height:42px;margin-top:4px;padding:0 10px">
+              <option value="Kỹ tính">Kỹ tính</option>
+              <option value="Quyết đoán">Quyết đoán</option>
+              <option value="Cởi mở">Cởi mở</option>
+              <option value="E dè/Thận trọng">E dè/Thận trọng</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">SỐ LẦN LIÊN HỆ</label>
+            <select id="cls-contact" class="ai-input" style="min-height:42px;margin-top:4px;padding:0 10px">
+              <option value="Chưa lần nào">Chưa lần nào</option>
+              <option value="1 lần">1 lần</option>
+              <option value="2 lần trở lên">2 lần trở lên</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">PHẢN ỨNG GẦN NHẤT</label>
+            <select id="cls-reaction" class="ai-input" style="min-height:42px;margin-top:4px;padding:0 10px">
+              <option value="Chưa liên hệ">Chưa liên hệ</option>
+              <option value="Quan tâm">Quan tâm</option>
+              <option value="Do dự">Do dự</option>
+              <option value="Từ chối">Từ chối</option>
+              <option value="Im lặng">Im lặng</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">THU NHẬP ƯỚC TÍNH</label>
+            <select id="cls-income" class="ai-input" style="min-height:42px;margin-top:4px;padding:0 10px">
+              <option value="Chưa biết">Chưa biết</option>
+              <option value="Dưới 15 triệu/tháng">< 15 triệu</option>
+              <option value="15-30 triệu/tháng">15–30 triệu</option>
+              <option value="Trên 30 triệu/tháng">> 30 triệu</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--dim);font-weight:700">GHI CHÚ THÊM</label>
+            <input type="text" id="cls-note" class="ai-input" style="min-height:42px;margin-top:4px" placeholder="VD: Đang so sánh với MB">
+          </div>
+        </div>
+
+        <button class="ai-btn" id="btn-classify" onclick="classifyCustomer()" style="background:linear-gradient(135deg,var(--vib-orange),#c4510b);box-shadow:0 4px 16px rgba(243,112,33,0.3);margin-top:6px">
+          🤖 PHÂN LOẠI & TẠO KỊCH BẢN
+        </button>
+      </div>
+
+      <!-- AI Result Area (REVISED 2026) -->
+      <div id="classify-result" class="ai-card classify-result" style="display:none;border-color:var(--vib-orange);padding:20px;background:linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%)">
+        <div style="text-align:center;margin-bottom:20px">
+          <div class="classify-badge" id="cls-badge">⏳ Đang phân tích...</div>
+          <div style="margin-top:12px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <span style="font-size:11px;color:var(--dim)">Điểm Master BANT+C: </span>
+            <span id="cls-confidence" style="font-size:14px;font-weight:800;color:var(--gold2)">—</span>
+          </div>
+          <div class="confidence-bar" style="max-width:250px;margin:10px auto 0; height: 6px;">
+            <div class="confidence-fill" id="cls-confidence-bar" style="width:0%;background:var(--gold2); box-shadow: 0 0 10px var(--gold)"></div>
+          </div>
+        </div>
+
+        <!-- 3-Card Grid for 2026 Strategy -->
+        <div class="strategy-grid">
+          <!-- CARD 1: CHIẾN LƯỢC TẬP TRUNG -->
+          <div class="strat-card privilege-style">
+            <div class="strat-header">
+              <span class="strat-icon">💎</span>
+              <span class="strat-label">ĐỊNH VỊ 2026</span>
+            </div>
+            <div class="strat-body">
+              <div id="cls-insight" style="margin-bottom:8px">Phân tích phân khúc...</div>
+              <div id="cls-meddic" style="font-size:10px; color:var(--blue); font-style:italic; border-top:1px solid var(--border); padding-top:4px; display:none"></div>
+            </div>
+          </div>
+
+          <!-- CARD 2: LỘ TRÌNH HÀNH ĐỘNG (GNM) -->
+          <div class="strat-card hagt-style">
+            <div class="strat-header">
+              <span class="strat-icon">⚡</span>
+              <span class="strat-label">LỘ TRÌNH HAGT</span>
+            </div>
+            <div class="strat-body" id="cls-hagt-actions">
+               <ul class="hagt-list" id="hagt-list-items">
+                 <li>Đang xác định ưu tiên...</li>
+               </ul>
+            </div>
+          </div>
+
+          <!-- CARD 3: THÔNG ĐIỆP CHỐT DEAL -->
+          <div class="strat-card script-style">
+            <div class="strat-header">
+              <span class="strat-icon">💬</span>
+              <span class="strat-label">THÔNG ĐIỆP "LÀM CHỦ"</span>
+            </div>
+            <div class="strat-body">
+              <div id="cls-zalo" class="mini-script">—</div>
+              <button class="copy-btn mini" onclick="copyElText('cls-zalo')">📋 Copy Zalo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Scripts & Objections (Expandable) -->
+        <div class="classify-section" style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px">
+          <div class="classify-section-title" style="color:var(--vib-blue)">📞 KỊCH BẢN GỌI ĐIỆN CÁ NHÂN HÓA</div>
+          <div class="classify-script" id="cls-script" style="background:var(--bg3); border-left:3px solid var(--vib-blue)">—</div>
+          <button class="copy-btn" onclick="copyElText('cls-script')">📋 Copy kịch bản</button>
+        </div>
+
+        <div class="classify-section">
+          <div class="classify-section-title" style="color:var(--red)">🛡️ XỬ LÝ TỪ CHỐI (REAL-TIME ADVICE)</div>
+          <div id="cls-objections" class="objection-container">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== RATES PAGE ==================== -->
+    <div class="page" id="page-rates">
+      <h2 class="page-title">💰 Công Cụ Lãi Suất</h2>
+      <p class="page-desc">Tự động lấy số liệu mới nhất &amp; Tính dòng tiền.</p>
+      
+      <div class="tab-pills" style="margin-bottom:16px">
+        <button class="pill active" onclick="showRateTab(this,'tab-rates-list')">🏦 Báo Giá Các Bank</button>
+        <button class="pill" onclick="showRateTab(this,'tab-rates-calc')">🧮 Máy Tính Khoản Vay</button>
+      </div>
+
+      <!-- RATES LIST TAB -->
+      <div class="rate-tab active" id="tab-rates-list">
+        <div class="ai-card" style="padding:12px; margin-bottom:12px;">
+           <span style="font-size:12px; color:var(--dim)">Trạng thái Data: </span>
+           <span id="rate-sync-status" style="font-size:12px; color:var(--green); font-weight:bold;">Đã đồng bộ từ Google Sheets ✅</span>
+           <button class="stat-btn" style="position:relative;top:0;right:0;float:right" onclick="fetchRates()">🔄</button>
+        </div>
+
+        <div class="accordion open" id="rate-house">
+          <div class="acc-header" onclick="toggleAcc(this)">
+            <div class="acc-left"><span class="acc-icon">🏠</span><span>Vay Mua Nhà BĐS (VIB & Peers)</span></div>
+            <span class="acc-arrow">›</span>
+          </div>
+          <div class="acc-body">
+            <div style="overflow-x:auto;">
+              <table class="info-table" id="table-rates-house">
+                <!-- Data injected by app.js -->
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div class="accordion open" id="rate-sme" style="margin-top: 15px;">
+          <div class="acc-header" onclick="toggleAcc(this)">
+            <div class="acc-left"><span class="acc-icon">🚀</span><span>Chiến dịch SME - Vay Kinh Doanh</span></div>
+            <span class="acc-arrow">›</span>
+          </div>
+          <div class="acc-body">
+            <div style="overflow-x:auto;">
+              <table class="info-table" id="table-rates-car">
+                <!-- SME Data injected by app.js -->
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALCULATOR TAB -->
+      <div class="rate-tab" id="tab-rates-calc">
+        <div class="ai-card" style="padding:16px;">
+          <label style="font-size:12px;color:var(--dim);font-weight:600">SỐ TIỀN VAY (VNĐ)</label>
+          <input type="text" inputmode="numeric" id="calc-amount" class="ai-input" style="min-height:44px;margin-top:4px;margin-bottom:12px;font-size:16px;font-weight:700" placeholder="VD: 1.000.000.000 (1 Tỷ)" value="1.000.000.000" oninput="formatCurrency(this)">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+            <div>
+              <label style="font-size:12px;color:var(--dim);font-weight:600">THỜI HẠN (THÁNG)</label>
+              <input type="number" id="calc-months" class="ai-input" style="min-height:44px;margin-top:4px" placeholder="VD: 120" value="120">
+            </div>
+            <div>
+              <label style="font-size:12px;color:var(--dim);font-weight:600">PHƯƠNG THỨC</label>
+              <select id="calc-type" class="ai-input" style="min-height:44px;margin-top:4px;padding:0 10px">
+                <option value="decline">Dư nợ giảm dần</option>
+                <option value="flat">Gốc lãi trả đều</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="background:var(--bg3);padding:12px;border-radius:12px;border:1px solid var(--border);margin-bottom:16px">
+            <h4 style="font-size:13px;color:var(--bright);margin-bottom:10px">Thiết lập Lãi Suất Nhảy Bậc</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+              <div>
+                <label style="font-size:11px;color:var(--dim)">Lãi Ưu đãi (%/năm)</label>
+                <input type="number" id="calc-promo-rate" class="ai-input" style="min-height:36px;padding:8px" step="0.1" value="6.5">
+              </div>
+              <div>
+                <label style="font-size:11px;color:var(--dim)">Số tháng Ưu đãi</label>
+                <input type="number" id="calc-promo-time" class="ai-input" style="min-height:36px;padding:8px" value="36">
+              </div>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--dim)">Lãi Thả nổi dự kiến (%/năm) kể từ tháng hết ưu đãi</label>
+              <input type="number" id="calc-float-rate" class="ai-input" style="min-height:36px;padding:8px;margin-top:4px" step="0.1" value="11">
+            </div>
+          </div>
+
+          <button class="ai-btn" onclick="calculateLoan()" style="background:linear-gradient(135deg,var(--vib-orange),#c4510b);box-shadow:0 4px 10px rgba(243,112,33,.3);">🧮 TÍNH DÒNG TIỀN</button>
+        </div>
+
+        <div id="calc-results" class="ai-card" style="display:none;padding:16px;border-color:var(--vib-orange)">
+          <h3 style="font-size:15px;color:var(--vib-orange);text-align:center;margin-bottom:16px">Kết Quả Phân Tích Dòng Tiền</h3>
+          <div style="display:grid;gap:10px">
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border)">
+              <span style="font-size:13px;color:var(--dim)">Gốc trả hàng tháng cố định:</span>
+              <b style="font-size:14px;color:var(--bright)" id="res-principal">0 ₫</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border)">
+              <span style="font-size:13px;color:var(--dim)">Lãi tháng đầu tiên (Cao nhất):</span>
+              <b style="font-size:14px;color:var(--red)" id="res-interest-m1">0 ₫</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border);background:var(--bg3);padding:8px;border-radius:6px">
+              <span style="font-size:13px;color:var(--text);font-weight:600">Tổng Gốc + Lãi Tháng 1:</span>
+              <b style="font-size:15px;color:var(--green)" id="res-total-m1">0 ₫</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-top:4px">
+              <span style="font-size:12px;color:var(--dim)" id="res-float-label">Tháng thả nổi (Tháng 37) trả:</span>
+              <b style="font-size:13px;color:var(--gold2)" id="res-float-amount">0 ₫</b>
+            </div>
+             <div style="display:flex;justify-content:space-between;padding-top:4px">
+              <span style="font-size:12px;color:var(--dim)">Tổng Lãi toàn bộ thời gian:</span>
+              <b style="font-size:13px;color:var(--text)" id="res-total-interest">0 ₫</b>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== DIARY (REPORT) PAGE ==================== -->
+    <div class="page" id="page-report">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 class="page-title" style="margin:0">🚀 Nhật Ký Bán Hàng</h2>
+        <button class="stat-btn" onclick="openDashboard()" style="position:static; padding:6px 10px; font-size:11px;">Dashboard 📊</button>
+      </div>
+      <p class="page-desc" style="margin-bottom:15px">Ghi nhận nhanh kết quả làm việc với khách hàng.</p>
+      
+      <div class="ai-card" style="padding:16px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div>
+            <label style="font-size:11px;color:var(--dim)">Chọn Quản lý (SM)</label>
+            <select id="diary-sm" class="ai-input" style="min-height:40px;margin-top:4px" onchange="updateRMList(this.value)">
+              <option value="">-- Chọn SM --</option>
+              <option value="Hoa Lý">SM Hoa Lý</option>
+              <option value="Văn Thạch">SM Văn Thạch</option>
+              <option value="Đức Tài">SM Đức Tài</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--dim)">Tên RM</label>
+            <select id="diary-rm" class="ai-input" style="min-height:40px;margin-top:4px">
+              <option value="">-- Chọn RM --</option>
+            </select>
+          </div>
+        </div>
+
+        <label style="font-size:11px;color:var(--dim)">Tên Khách Hàng</label>
+        <input type="text" id="diary-customer" class="ai-input" style="min-height:40px;margin-top:4px;margin-bottom:12px" placeholder="Ví dụ: Nguyễn Văn A">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div>
+            <label style="font-size:11px;color:var(--dim)">Phân loại</label>
+            <select id="diary-type" class="ai-input" style="min-height:40px;margin-top:4px">
+              <option value="KHHH > 3 tỷ">KHHH > 3 tỷ</option>
+              <option value="KHHH < 3 tỷ">KHHH < 3 tỷ</option>
+              <option value="C2C">C2C</option>
+              <option value="CIC HO">CIC HO</option>
+              <option value="KH Mới">KH Mới</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--dim)">Sản phẩm</label>
+            <select id="diary-product" class="ai-input" style="min-height:40px;margin-top:4px" onchange="toggleLendingFields(this.value)">
+              <option value="LENDING">LENDING</option>
+              <option value="DEPO">DEPO</option>
+              <option value="BANCAF">BANCA</option>
+              <option value="CARD">CARD</option>
+              <option value="NTB">NTB</option>
+              <option value="LOA">LOA</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- LENDING SPECIFIC FIELDS -->
+        <div id="lending-fields" style="display:none; padding:12px; background:rgba(74,158,255,0.05); border:1px dashed var(--blue); border-radius:12px; margin-bottom:12px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label style="font-size:11px;color:var(--blue);font-weight:bold">Tiền vay (Tỷ đồng)</label>
+              <input type="number" id="diary-amount" class="ai-input" style="min-height:40px;margin-top:4px" placeholder="VD: 2.5" step="0.1">
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--blue);font-weight:bold">Tiến độ hồ sơ</label>
+              <select id="diary-progress" class="ai-input" style="min-height:40px;margin-top:4px">
+                <option value="Khách có nhu cầu">📝 Khách có nhu cầu</option>
+                <option value="Đã chốt nhu cầu">✅ Đã chốt nhu cầu</option>
+                <option value="Đã gửi định giá">🔍 Đã gửi định giá</option>
+                <option value="Đã có chứng thư">📜 Đã có chứng thư</option>
+                <option value="Trình phê duyệt">📤 Trình phê duyệt</option>
+                <option value="Đã phê duyệt">🎊 Đã phê duyệt</option>
+                <option value="Chờ giải ngân">💰 Chờ giải ngân</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <label style="font-size:11px;color:var(--dim)">Hình thức liên hệ</label>
+        <select id="diary-method" class="ai-input" style="min-height:40px;margin-top:4px;margin-bottom:12px">
+          <option value="GỌI">📞 GỌI điện thoại</option>
+          <option value="GẶP">🤝 GẶP trực tiếp</option>
+          <option value="GỬI ZALO/SMS">💬 GỬI ZALO/SMS</option>
+        </select>
+        
+        <label style="font-size:11px;color:var(--dim)">Kết quả / Ghi chú</label>
+        <textarea id="diary-result" class="ai-input" style="margin-top:4px; min-height:80px" placeholder="VD: Khách đồng ý nộp hồ sơ, hẹn sáng thứ 2..."></textarea>
+        
+        <button class="ai-btn" id="btn-submit-diary" onclick="submitDiary()" style="background:linear-gradient(135deg,var(--vib-orange),#c4510b); color:white; box-shadow:0 4px 10px rgba(243,112,33,.3); margin-top:16px;">🚀 GỬI NHẬT KÝ (DUAL-SYNC)</button>
+      </div>
+
+      <div id="ai-feedback-box" class="ai-card" style="display:none; margin-top:16px; border-color:var(--green); background:rgba(62,207,142,0.03)">
+         <div style="font-size:11px; color:var(--green); font-weight:bold; margin-bottom:4px">✨ AI COACHING GỢI Ý:</div>
+         <p id="ai-feedback-text" style="font-size:12px; color:var(--text); line-height:1.5;"></p>
+         <button class="copy-btn" style="margin-top:8px" onclick="useAiFeedback()">💬 Dùng kịch bản này</button>
+      </div>
+    </div>
+
+    <!-- ==================== CARE PAGE ==================== -->
+    <div class="page" id="page-care">
+      <h2 class="page-title">💚 Chăm Sóc KH Cũ</h2>
+
+      <div class="accordion" id="zalo-checkin">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-left"><span class="acc-icon">💬</span><span>Tin nhắn Zalo chăm sóc</span></div>
+          <span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="tab-pills">
+            <button class="pill active" onclick="showZaloTab(this,'zalo-post')">Sau giải ngân</button>
+            <button class="pill" onclick="showZaloTab(this,'zalo-check')">Check-in</button>
+            <button class="pill" onclick="showZaloTab(this,'zalo-bday')">Sinh nhật</button>
+            <button class="pill" onclick="showZaloTab(this,'zalo-tet')">Tết/Lễ</button>
+          </div>
+          <div class="zalo-tab active" id="zalo-post">
+            <div class="msg-box">Chào anh/chị <span class="var">[Tên]</span>,
+Chúc mừng! Khoản vay đã giải ngân thành công ạ! 🎉
+📋 Lưu ý:
+• Ngày trả nợ: <span class="var">[ngày]</span>
+• Số tiền: <span class="var">[X triệu/tháng]</span>
+• TK trả nợ: <span class="var">[số TK]</span>
+Lưu số em nhé: <span class="var">[SĐT]</span>
+Cần gì nhắn em bất kỳ lúc nào ạ 🙏</div>
+            <button class="copy-btn" onclick="copyMsg(this)">📋 Copy</button>
+          </div>
+          <div class="zalo-tab" id="zalo-check">
+            <div class="msg-box">Anh/chị <span class="var">[Tên]</span> ơi, <span class="var">[Tên RM]</span> VIB đây ạ 😊
+Dạo này anh/chị khoẻ không ạ?
+Em hỏi thăm nhanh thôi. Cần gì nhắn em nhé!</div>
+            <button class="copy-btn" onclick="copyMsg(this)">📋 Copy</button>
+          </div>
+          <div class="zalo-tab" id="zalo-bday">
+            <div class="msg-box">Chúc mừng sinh nhật anh/chị <span class="var">[Tên]</span>! 🎂🎉
+Chúc anh/chị tuổi mới nhiều sức khoẻ, <span class="var">[kinh doanh phát đạt / gia đình hạnh phúc]</span>!
+Em <span class="var">[Tên RM]</span> – VIB 🙏</div>
+            <button class="copy-btn" onclick="copyMsg(this)">📋 Copy</button>
+          </div>
+          <div class="zalo-tab" id="zalo-tet">
+            <div class="msg-box">🧧 Chúc Mừng Năm Mới!
+Kính chúc anh/chị <span class="var">[Tên]</span>:
+🌟 Sức khoẻ dồi dào
+💰 Tài lộc sung túc
+🏠 Gia đình an khang
+Năm mới có kế hoạch gì, cứ chia sẻ với em nhé!
+Em <span class="var">[Tên RM]</span> – VIB 🙏</div>
+            <button class="copy-btn" onclick="copyMsg(this)">📋 Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion" id="retention">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-left"><span class="acc-icon">🏠</span><span>Giữ chân KH tất toán (SAVE)</span></div>
+          <span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="save-steps">
+            <div class="save-step">
+              <div class="save-letter">S</div>
+              <div class="save-content">
+                <b>SENSE – Lắng nghe</b>
+                <p>"Em nhận yêu cầu tất toán. Trước khi xử lý, em hỏi thêm:"</p>
+                <p>1. Bán cho ai? Người mua vay NH nào chưa?</p>
+                <p>2. Sau bán, có mua căn khác không?</p>
+                <p>3. Dự kiến công chứng khi nào?</p>
+              </div>
+            </div>
+            <div class="save-step">
+              <div class="save-letter">A</div>
+              <div class="save-content">
+                <b>ACKNOWLEDGE – Công nhận</b>
+                <p>"Chúc mừng anh/chị bán được giá tốt!"</p>
+                <p>⚠️ KHÔNG nói: "Sao lại bán?" / "Nghĩ lại đi"</p>
+              </div>
+            </div>
+            <div class="save-step">
+              <div class="save-letter">V</div>
+              <div class="save-content">
+                <b>VALUE – Đề xuất giá trị</b>
+                <p>📌 Nếu MUA CĂN KHÁC → Chuyển TSĐB + giữ lãi cũ</p>
+                <p>📌 Nếu KHÔNG MUA → Cross-sell tiết kiệm/đầu tư</p>
+                <p>📌 LUÔN LUÔN → Xin SĐT người MUA để tư vấn vay</p>
+              </div>
+            </div>
+            <div class="save-step">
+              <div class="save-letter">E</div>
+              <div class="save-content">
+                <b>EXIT – Kết thúc đẹp</b>
+                <p>Dù giữ hay mất → giữ mối quan hệ + xin referral</p>
+                <p>"Khoản vay kết thúc nhưng em vẫn phục vụ anh/chị nhé"</p>
+              </div>
+            </div>
+          </div>
+          <div class="tip-box">💡 Mỗi giao dịch bán nhà = 100% có người MUA cần vay → 1 deal mới miễn phí!</div>
+        </div>
+      </div>
+
+      <div class="accordion" id="referral">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-left"><span class="acc-icon">🤝</span><span>Xin Referral – 5 nguyên tắc vàng</span></div>
+          <span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <div class="rules-list">
+            <div class="rule">1️⃣ <b>CHO TRƯỚC – XIN SAU</b><br>Phải tạo giá trị rồi mới xin</div>
+            <div class="rule">2️⃣ <b>ĐÚNG THỜI ĐIỂM</b><br>Ngay sau khi KH nhận giá trị (giải ngân, giảm lãi...)</div>
+            <div class="rule">3️⃣ <b>CỤ THỂ HOÁ</b><br>"Ai quen đang cần vay KD?" thay vì "giới thiệu ai đó"</div>
+            <div class="rule">4️⃣ <b>LÀM DỄ CHO KHÁCH</b><br>Chỉ cần tên + SĐT, RM tự liên hệ</div>
+            <div class="rule">5️⃣ <b>CẢM ƠN & CẬP NHẬT</b><br>Luôn báo kết quả cho người giới thiệu</div>
+          </div>
+          <div class="script-box" style="margin-top:12px">
+            <p><b>Câu xin referral chuẩn:</b></p>
+            <p>"Anh/chị ơi, bạn bè có ai cần vay không? Em phục vụ tốt lắm, anh/chị trải nghiệm rồi mà 😊"</p>
+          </div>
+          <button class="copy-btn" onclick="copyText(this)">📋 Copy</button>
+        </div>
+      </div>
+
+      <div class="accordion" id="crosssell">
+        <div class="acc-header" onclick="toggleAcc(this)">
+          <div class="acc-left"><span class="acc-icon">📈</span><span>Cross-sell &amp; Up-sell</span></div>
+          <span class="acc-arrow">›</span>
+        </div>
+        <div class="acc-body">
+          <table class="info-table">
+            <tr><th>KH đang có</th><th>Cross-sell</th></tr>
+            <tr><td>Vay KD SME</td><td>Thẻ TD DN, Bảo hiểm</td></tr>
+            <tr><td>Vay mua BĐS</td><td>BH nhân thọ, Thẻ TD</td></tr>
+            <tr><td>Vay tiêu dùng</td><td>Thẻ TD, Tiết kiệm</td></tr>
+            <tr><td>Thẻ tín dụng</td><td>Vay tiêu dùng</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SCRIPTS PAGE ==================== -->
+    <div class="page" id="page-scripts">
+      <h2 class="page-title">💬 Kịch Bản Nhanh</h2>
+      <p class="page-desc">Chọn tình huống → Copy → Gửi Zalo</p>
+
+      <div class="script-card" onclick="toggleScript(this)">
+        <div class="sc-title">📞 Follow-up sau gặp mặt</div>
+        <div class="sc-body">
+          <div class="msg-box">Chào anh/chị <span class="var">[Tên]</span>,
+Cảm ơn anh/chị đã dành thời gian hôm nay ạ.
+Tóm tắt:
+✅ <span class="var">[Điểm 1]</span>
+✅ <span class="var">[Điểm 2]</span>
+📋 Bước tiếp: <span class="var">[hành động + deadline]</span>
+Em chuẩn bị và gửi trước <span class="var">[ngày]</span> ạ!</div>
+          <button class="copy-btn" onclick="event.stopPropagation();copyMsg(this)">📋 Copy</button>
+        </div>
+      </div>
+
+      <div class="script-card" onclick="toggleScript(this)">
+        <div class="sc-title">📄 Nhắc bổ sung hồ sơ</div>
+        <div class="sc-body">
+          <div class="msg-box">Anh/chị <span class="var">[Tên]</span> ơi,
+Em check hồ sơ còn thiếu:
+📋 <span class="var">[liệt kê cụ thể]</span>
+Anh/chị gửi trước <span class="var">[ngày]</span> để em kịp trình duyệt đợt này nhé ạ 🙏
+Cần hỗ trợ gì gọi em: <span class="var">[SĐT]</span></div>
+          <button class="copy-btn" onclick="event.stopPropagation();copyMsg(this)">📋 Copy</button>
+        </div>
+      </div>
+
+      <div class="script-card" onclick="toggleScript(this)">
+        <div class="sc-title">🎉 Chúc mừng giải ngân</div>
+        <div class="sc-body">
+          <div class="msg-box">Chào anh/chị <span class="var">[Tên]</span>,
+Chúc mừng! Khoản vay đã giải ngân ạ! 🎉
+📋 Ngày trả: <span class="var">[ngày]</span> | Số tiền: <span class="var">[X]</span>/tháng
+Lưu số em: <span class="var">[SĐT]</span>
+Cần gì nhắn em ạ 🙏
+🤝 Ai quen cần vay, giới thiệu em nhé!</div>
+          <button class="copy-btn" onclick="event.stopPropagation();copyMsg(this)">📋 Copy</button>
+        </div>
+      </div>
+
+      <div class="script-card" onclick="toggleScript(this)">
+        <div class="sc-title">🔥 Tạo urgency (ngày 5)</div>
+        <div class="sc-body">
+          <div class="msg-box">Anh/chị <span class="var">[Tên]</span>, chương trình ưu đãi <span class="var">[X%]</span> chỉ còn đến hết tuần ạ.
+Sau đó lãi về mức <span class="var">[Y%]</span>.
+Gửi hồ sơ ngày mai em kịp trình duyệt.
+Anh/chị cân nhắc giúp em nhé 🙏</div>
+          <button class="copy-btn" onclick="event.stopPropagation();copyMsg(this)">📋 Copy</button>
+        </div>
+      </div>
+
+      <div class="script-card" onclick="toggleScript(this)">
+        <div class="sc-title">💚 Sau tất toán</div>
+        <div class="sc-body">
+          <div class="msg-box">Anh/chị <span class="var">[Tên]</span>,
+Tất toán hoàn tất ạ. Giấy xoá thế chấp em gửi trong <span class="var">[X ngày]</span>.
+Cảm ơn anh/chị đã tin tưởng VIB 🙏
+Em vẫn ở đây nếu cần hỗ trợ.
+🤝 Ai quen cần vay, nhớ em nhé!
+Em <span class="var">[Tên]</span>: <span class="var">[SĐT]</span></div>
+          <button class="copy-btn" onclick="event.stopPropagation();copyMsg(this)">📋 Copy</button>
+        </div>
+      </div>
+
+      <div class="script-card" onclick="toggleScript(this)">
+        <div class="sc-title">🤝 Cảm ơn người giới thiệu</div>
+        <div class="sc-body">
+          <div class="msg-box">Anh/chị <span class="var">[Tên]</span> ơi,
+Em đã liên hệ <span class="var">[tên referral]</span> rồi ạ.
+<span class="var">[Anh/chị ấy]</span> rất quan tâm, em hẹn gặp <span class="var">[ngày]</span>.
+Cảm ơn anh/chị đã giới thiệu! 🙏
+Có tin vui em báo ạ 😊</div>
+          <button class="copy-btn" onclick="event.stopPropagation();copyMsg(this)">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== ROADMAP 90 DAYS ==================== -->
+    <div class="page" id="page-roadmap">
+      <h2 class="page-title" style="color:var(--vib-orange)">📅 Lộ Trình 90 Ngày</h2>
+      <p class="page-desc">Chỉ định chính xác nội dung cần xây dựng từng tuần để hút khách hàng thụ động.</p>
+
+      <div class="rm-month-card" id="rm-m1">
+        <div class="rm-month-header" onclick="toggleAcc(this)">
+          <div>
+            <div class="rm-month-title">Tháng 1: Tạo Trust (Định vị chuyên gia)</div>
+            <div class="rm-month-desc">Giáo dục tư duy tài chính, hướng dẫn thủ tục</div>
+          </div>
+          <span class="acc-arrow" style="color:#fff;font-size:20px">›</span>
+        </div>
+        <div class="rm-month-body">
+          <button class="rm-week-btn" onclick="showPage('tools');prefillChat('Viết bài Facebook Tuần 1: Dùng Concept [HOW-TO]. Chủ đề: Hướng dẫn cách tự tính Room tín dụng trước khi vay mua nhà để không bị từ chối hồ sơ.')">
+            <div class="rm-week-title">Tuần 1: Concept HOW-TO 💡</div>
+            <div class="rm-week-topic">Hướng dẫn tính Room tín dụng hồ sơ mua nhà để không bị ngân hàng trả về.</div>
+          </button>
+          <button class="rm-week-btn" onclick="showPage('tools');prefillChat('Viết bài Zalo Tuần 2: Dùng Concept [POV - Góc nhìn chuyên gia]. Chủ đề: Những lầm tưởng phổ biến về lãi suất thả nổi khiến người trẻ gồng nợ mệt mỏi.')">
+            <div class="rm-week-title">Tuần 2: Concept POV (Góc nhìn) 💡</div>
+            <div class="rm-week-topic">Lầm tưởng về "lãi suất thả nổi" khiến khách hàng gồng nợ.</div>
+          </button>
+          <button class="rm-week-btn" onclick="showPage('tools');prefillChat('Viết bài Facebook Tuần 3: Dùng Concept [CHECKLIST]. Chủ đề: 5 loại giấy tờ các chủ tiệm kinh doanh nhỏ lẻ cần chuẩn bị sẵn để ngân hàng tin tưởng duyệt hạn mức.')">
+            <div class="rm-week-title">Tuần 3: Concept CHECKLIST 💡</div>
+            <div class="rm-week-topic">5 giấy tờ tiểu thương cần sẵn sàng để vay vốn hạn mức không cần báo cáo thuế.</div>
+          </button>
+          <button class="rm-week-btn" onclick="showPage('tools');prefillChat('Viết bài Zalo Tuần 4: Dùng Concept [SHARE TIPS] và công thức AIDA. Chủ đề: Mẹo để được phê duyệt khoản vay cao hơn giá trị thực của căn nhà định mua.')">
+            <div class="rm-week-title">Tuần 4: Concept SHARE TIPS 💡</div>
+            <div class="rm-week-topic">Mẹo vay đủ vốn dù định giá tài sản thấp hơn kỳ vọng.</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="rm-month-card" id="rm-m2">
+        <div class="rm-month-header" onclick="toggleAcc(this)">
+          <div>
+            <div class="rm-month-title">Tháng 2: Engagement (Kích thích &amp; Nỗi đau)</div>
+            <div class="rm-month-desc">Khoét sâu Nỗi đau của khách, sử dụng công thức PAS</div>
+          </div>
+          <span class="acc-arrow" style="color:#fff;font-size:20px">›</span>
+        </div>
+        <div class="rm-month-body">
+          <button class="rm-week-btn" style="border-left-color:var(--red)" onclick="showPage('tools');prefillChat('Viết bài Facebook Tuần 5: Dùng vòng lặp PAS và Concept [WARNING/CẢNH BÁO]. Chủ đề: Cảnh báo bẫy đáo hạn thẻ tín dụng chui làm nát lịch sử CIC 5 năm.')">
+            <div class="rm-week-title">Tuần 1: Concept CẢNH BÁO ⚠️</div>
+            <div class="rm-week-topic">Sự nguy hiểm của việc đáo hạn thẻ tín dụng chui phá hỏng điểm CIC.</div>
+          </button>
+          <button class="rm-week-btn" style="border-left-color:var(--red)" onclick="showPage('tools');prefillChat('Viết bài Zalo Tuần 6: Dùng khung PAS và Concept [SECRET/BÍ MẬT]. Chủ đề: Rất nhiều ngân hàng không nói cho bạn cách cơ cấu lại nợ dư nợ cũ lãi cao sang ngân hàng khác lãi thấp.')">
+            <div class="rm-week-title">Tuần 2: Concept THÂM CUNG BÍ SỬ ⚠️</div>
+            <div class="rm-week-topic">Bí mật cơ cấu chuyển nợ gốc (Refinance) để thoát cảnh lãi cao 14%.</div>
+          </button>
+          <button class="rm-week-btn" style="border-left-color:rgba(222,60,255,0.8)" onclick="showPage('tools');prefillChat('Viết bài Facebook Tuần 7: Dùng Concept [Q&A]. Đóng vai RM giải đáp cho 1 KH đang hoảng loạn vì trót mua đất nền kẹt vốn đóng băng, hỏi vay thêm tiền xây nhà kho.')">
+            <div class="rm-week-title">Tuần 3: Concept HỎI - ĐÁP 💬</div>
+            <div class="rm-week-topic">Giải đáp: "Kẹt đất ven đô, muốn vay chồng lên sổ lấy vốn làm ăn được không?"</div>
+          </button>
+          <button class="rm-week-btn" style="border-left-color:var(--vib-blue)" onclick="showPage('tools');prefillChat('Viết bài Zalo Tuần 8: Concept TÂM SỰ. Kể chuyện đời nghề RM: Một ca từ chối hồ sơ đau lòng chỉ vì khách quen thói quen quẹt thẻ trễ hạn 3 ngày.')">
+            <div class="rm-week-title">Tuần 4: Concept TÂM SỰ NGHỀ HIỂU KHÁCH 💬</div>
+            <div class="rm-week-topic">Chuyện đời RM: Tiếc thương 1 hồ sơ xịn rớt đài chỉ vì chậm thẻ 3 ngày.</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="rm-month-card" id="rm-m3">
+        <div class="rm-month-header" onclick="toggleAcc(this)">
+          <div>
+            <div class="rm-month-title">Tháng 3: Conversion (Chốt Hẹn &amp; Giải Ngân)</div>
+            <div class="rm-month-desc">Khoe thành tích BAB, đưa Lead Magnet hút khách</div>
+          </div>
+          <span class="acc-arrow" style="color:#fff;font-size:20px">›</span>
+        </div>
+        <div class="rm-month-body">
+          <button class="rm-week-btn" style="border-left-color:var(--green)" onclick="showPage('tools');prefillChat('Viết bài FB Tuần 9: Dùng công thức BAB khoe CASE STUDY. Kể chuyện hôm trước khó khăn không chứng minh được thu nhập mảng online, hôm nay VIB duyệt vay vốn thành công 1 tỷ.')">
+            <div class="rm-week-title">Tuần 1: Concept CASE STUDY (BAB) 🏆</div>
+            <div class="rm-week-topic">Khoe 1 hồ sơ vay lưu động SME online "khó nhằn" được duyệt thần tốc.</div>
+          </button>
+          <button class="rm-week-btn" style="border-left-color:var(--green)" onclick="showPage('tools');prefillChat('Viết bài Zalo Tuần 10: Dùng Concept [HOT NEWS]. Bản tin cực nóng về định giá BĐS đi kèm Gói vay Mua nhà VIB Cố định Biên Độ.')">
+            <div class="rm-week-title">Tuần 2: Concept TIN NÓNG 💥</div>
+            <div class="rm-week-topic">Luật Đất đai mới thay đổi khung giá - Động thái của Bank như thế nào?</div>
+          </button>
+          <button class="rm-week-btn" style="border-left-color:var(--vib-yellow)" onclick="showPage('tools');prefillChat('Viết bài Zalo Tuần 11: Concept Tặng Quà Miễn Phí (Lead Magnet). Đề nghị định giá sơ bộ Miễn Phí tài sản Bất động sản qua Inbox bằng dữ liệu VIB.')">
+            <div class="rm-week-title">Tuần 3: Concept TẶNG QUÀ MIỄN PHÍ 🎁</div>
+            <div class="rm-week-topic">Mồi câu: Nhận định giá sơ bộ Bất động sản Miễn phí dành cho khách hàng Inbox.</div>
+          </button>
+          <button class="rm-week-btn" style="border-left-color:var(--vib-yellow)" onclick="showPage('tools');prefillChat('Viết bài Zalo Tuần 12: Dùng Concept CHỐT SALE TRỰC DIỆN. Nhắc lại chỉ tiêu tuần, mời mọc 3 suất ưu đãi lãi suất cuối cùng chốt sổ tháng này.')">
+            <div class="rm-week-title">Tuần 4: Concept HARD-SALE CHỐT ĐƠN 🎯</div>
+            <div class="rm-week-topic">Kêu gọi hành động khẩn cấp: Chỉ còn 3 suất giải ngân giữ lới với mức lãi X%.</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== AI TOOLS PAGE ==================== -->
+    <div class="page" id="page-tools" style="display: flex; flex-direction: column; height: calc(100vh - 140px);">
+      <h2 class="page-title">⚡ Trợ Lý Cố Vấn (Gemini AI)</h2>
+      <p class="page-desc" style="margin-bottom:8px">Hỗ trợ RM phân tích, viết Zalo, kỹ năng chốt sale</p>
+
+      <div class="chat-container" id="chat-container">
+        <div class="chat-message bot">
+          <div class="msg-bubble">Xin chào! Trợ lý AI VIB đây ạ 🤖. Anh/chị cần em hỗ trợ:<br><br>• Xử lý khách chê lãi cao?<br>• Viết tin nhắn xin referral?<br>• Lên phương án gọi điện?<br><br>Gõ câu hỏi xuống dưới nhé!</div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-suggestions">
+          <button class="chat-sugg" onclick="prefillChat('Cách xử lý khách hàng chê lãi VIB cao hơn ngân hàng T')">Xử lý chê lãi</button>
+          <button class="chat-sugg" onclick="prefillChat('Viết bài FB bán gói Vay Mua Nhà theo công thức BAB, có yếu tố Chia sẻ Tip')">Content Mua Nhà</button>
+          <button class="chat-sugg" onclick="prefillChat('Viết 1 kịch bản Zalo xin 15 phút gặp Giám đốc DN Bao Bì')">Xin hẹn Giám đốc</button>
+        </div>
+        <div style="display:flex; gap:8px">
+          <textarea id="ai-chat-input" class="ai-input" style="min-height:44px; padding:10px 14px; margin:0;" placeholder="Nhập câu hỏi..."></textarea>
+          <button class="ai-btn" onclick="sendGemini()" style="margin:0; width:60px; display:flex; align-items:center; justify-content:center; padding:0" id="send-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">Đã copy! ✅</div>
+
+<!-- Firebase SDK (compat mode for simplicity) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js?v=706"></script>
+</body>
+</html>
