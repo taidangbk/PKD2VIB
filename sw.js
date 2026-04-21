@@ -1,4 +1,4 @@
-const CACHE = '637vib-v2.37-stable';
+const CACHE = '637vib-v2.40-master';
 const ASSETS = [
   '/',
   './index.html',

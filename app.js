@@ -121,13 +121,13 @@ async function handleGoogleLogin() {
   const btn = document.getElementById('btn-google-login');
   const errBox = document.getElementById('login-error');
   
-  btn.textContent = '⏳ Đang chuyển hướng...';
+  btn.textContent = '⏳ Đang kết nối Google...';
   btn.disabled = true;
   errBox.style.display = 'none';
   
   try {
-    // CHỐT HẠ: Dùng Redirect để đảm bảo 100% không bị chặn trên điện thoại RM
-    await auth.signInWithRedirect(googleProvider);
+    // Đổi sang Popup để RM thấy cửa sổ chọn tài khoản ngay lập tức
+    await auth.signInWithPopup(googleProvider);
   } catch (error) {
     console.error('Login error details:', error);
     btn.innerHTML = 'Đăng nhập bằng Google';
@@ -135,7 +135,7 @@ async function handleGoogleLogin() {
     errBox.innerHTML = `❌ Lỗi: ${error.message}`;
     errBox.style.display = 'block';
   }
-}    
+}
 
 function handleLogout() {
   auth.signOut();
@@ -659,8 +659,6 @@ BẮT BUỘC trả lời theo format JSON (KHÔNG giải thích thêm):
   "vib_solution": "Gợi ý gói vay hoặc cách tiếp cận chốt sale của VIB (khoảng 30 từ)",
   "pains": ["Nỗi đau 1", "Nỗi đau 2", "Nỗi đau 3"]
 }`;
-
-LƯU Ý: Dựa trên kiến thức ngân hàng chuyên nghiệp và đặc thù khách hàng VIB (Nhanh, Hiệu quả, Hiện đại).`;
 
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
