@@ -624,33 +624,28 @@ async function classifyCustomer() {
   document.getElementById('cls-badge').textContent = '⏳ Đang phân tích...';
   document.getElementById('cls-insight').textContent = '—';
   
-  const prompt = `Bạn là SIÊU TRỢ LÝ AI (Agentic AI) của VIB theo khung năng lực Master Sales Hub.
-Nhiệm vụ: Chấm điểm BANT+C, Qualify deal và đưa ra Chiến lược chốt sale.
+  const prompt = `Bạn là một CHUYÊN GIA TÍN DỤNG CẤP CAO (Strategic RM) tại Ngân hàng VIB.
+Nhiệm vụ: Phân loại và lập 'BẢN ĐỒ TÁC CHIẾN' (Battle Plan) để chốt deal tín dụng.
 
-1. BANT+C SCORING (Thang 100 điểm):
-   - Budget (20đ): Có ngân sách chưa?
-   - Authority (20đ): Có quyền quyết không?
-   - Need (25đ): Nhu cầu có cấp bách không?
-   - Timeline (20đ): Cần giải ngân khi nào?
-   - Condition (15đ): Đủ TSĐB/Thu nhập chưa?
+KIẾN THỨC SẢN PHẨM VIB CỦA BẠN:
+- Vay Mua Nhà: Lãi suất cạnh tranh, định giá cao, phê duyệt nhanh 24h.
+- Vay Ô tô: TOP 1 thị trường, liên kết mọi showroom, giải ngân siêu tốc.
+- Vay SME/Kinh doanh: Hỗ trợ hộ kinh doanh, thấu chi hạn mức linh hoạt, hồ sơ đơn giản.
+- Khác: Thẻ tín dụng, bảo hiểm, huy động.
 
-2. QUALIFY CHIẾN LƯỢC:
-   - Nếu deal >= 1 tỷ: Sử dụng MEDDIC để qualify.
-   - Nếu lead mới: Sử dụng BANT+C.
-
-3. STORYTELLING:
-   - Đưa ra kịch bản tiếp cận 60s theo phong cách Storytelling 7 bước.
+PHÉP PHÂN TÍCH MASTER:
+1. TÂM LÝ: Nhận diện nhóm DISC (D-I-S-C) và 'Tử huyệt cảm xúc' (Tiền, Danh tiếng, Tình yêu, Bản thân).
+2. THẾ TRẬN: Tìm 'Vũ khí chốt deal' của VIB để đánh bại MB, Vietcombank, Techcombank trong tình trạng khách đang so sánh.
+3. CHIẾN THUẬT: Theo quy tắc BANT+C (Budget, Authority, Need, Time, Confidence). Nếu deal > 1 tỷ, áp dụng thêm MEDDIC.
 
 Thông tin khách hàng:
 - Họ tên: ${name} | Nghề nghiệp: ${job} | Nhu cầu: ${need}
 - Ưu tiên: ${priority} | Phong cách: ${style} | Thu nhập: ${income}
 - Phản ứng: ${reaction} | Ghi chú: ${note}
 
-BẮT BUỘC trả lời theo format JSON (KHÔNG giải thích thêm):
+BẮT BUỘC trả lời theo định dạng JSON chuẩn (KHÔNG giải thích thêm):
 {
   "classification": "HOT" | "WARM" | "COLD" | "POTENTIAL",
-  "bantc_score": { "B": 0, "A": 0, "N": 0, "T": 0, "C": 0, "total": 0 },
-  "confidence": số từ 60-99 (Chỉ số sẵn sàng bứt tốc),
   "insight": "Phân tích đặc điểm hành vi và tâm lý khách hàng (khoảng 30-50 từ)",
   "meddic_qualify": "Nhận định theo MEDDIC nếu deal > 1 tỷ, nếu không thì ghi 'N/A'",
   "hagtActions": ["Việc 1 cần làm ngay", "Việc 2 cần làm ngay", "Việc 3 cần làm ngay"],
@@ -668,10 +663,21 @@ BẮT BUỘC trả lời theo format JSON (KHÔNG giải thích thêm):
     });
 
     const data = await response.json();
+    if (!data.candidates || !data.candidates[0]) {
+      throw new Error("AI không phản hồi hoặc hết hạn mức (Quota).");
+    }
+    
     let textResult = data.candidates[0].content.parts[0].text;
     
-    // Xử lý nếu AI trả về code block JSON
-    textResult = textResult.replace(/```json|```/g, "").trim();
+    // Làm sạch chuỗi JSON một cách triệt để
+    textResult = textResult.replace(/```json/g, "").replace(/```/g, "").trim();
+    
+    // Tìm vị trí ngoặc nhọn đầu tiên và cuối cùng để trích xuất JSON chuẩn
+    const start = textResult.indexOf('{');
+    const end = textResult.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error("AI không trả về định dạng chuẩn.");
+    textResult = textResult.substring(start, end + 1);
+
     const result = JSON.parse(textResult);
 
     // Hiển thị giao diện mới chuyên nghiệp
@@ -762,18 +768,25 @@ function renderClassifyResult(result, name) {
   // Zalo Card
   document.getElementById('cls-zalo').textContent = result.zaloMessage || '—';
   
+  // VIB Weapon (Solution)
+  const solEl = document.getElementById('cls-solution');
+  if (result.vib_solution) {
+    solEl.innerHTML = `<strong>VŨ KHÍ VIB:</strong> ${result.vib_solution}`;
+    solEl.style.display = 'block';
+  } else {
+    solEl.style.display = 'none';
+  }
+  
   // Detailed Scripts
   document.getElementById('cls-script').textContent = result.script60s || '—';
   
   // Objections
   const objBox = document.getElementById('cls-objections');
-  if (result.objections && result.objections.length > 0) {
-    objBox.innerHTML = result.objections.map(o => 
-      `<div class="objection-item">
-        <div class="objection-q">❌ ${o.q}</div>
-        <div class="objection-a">✅ ${o.a}</div>
-      </div>`
-    ).join('');
+  const objections = result.objections || result.pains || [];
+  if (objections.length > 0) {
+    objBox.innerHTML = objections.map(o => `<div class="objection-item">${o}</div>`).join('');
+  } else {
+    objBox.textContent = '—';
   }
 }
 
