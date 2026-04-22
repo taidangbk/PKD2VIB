@@ -624,35 +624,21 @@ async function classifyCustomer() {
   document.getElementById('cls-badge').textContent = '⏳ Đang phân tích...';
   document.getElementById('cls-insight').textContent = '—';
   
-  const prompt = `Bạn là một CHUYÊN GIA TÍN DỤNG CẤP CAO (Strategic RM) tại Ngân hàng VIB.
-Nhiệm vụ: Phân loại và lập 'BẢN ĐỒ TÁC CHIẾN' (Battle Plan) để chốt deal tín dụng.
+  const prompt = `Bạn là CHUYÊN GIA TÍN DỤNG VIB. Phân tích khách hàng sau.
+Thông tin: Tên: ${name}, Nghề: ${job}, Nhu cầu: ${need}, Thu nhập: ${income}, Ghi chú: ${note}.
 
-KIẾN THỨC SẢN PHẨM VIB CỦA BẠN:
-- Vay Mua Nhà: Lãi suất cạnh tranh, định giá cao, phê duyệt nhanh 24h.
-- Vay Ô tô: TOP 1 thị trường, liên kết mọi showroom, giải ngân siêu tốc.
-- Vay SME/Kinh doanh: Hỗ trợ hộ kinh doanh, thấu chi hạn mức linh hoạt, hồ sơ đơn giản.
-- Khác: Thẻ tín dụng, bảo hiểm, huy động.
-
-PHÉP PHÂN TÍCH MASTER:
-1. TÂM LÝ: Nhận diện nhóm DISC (D-I-S-C) và 'Tử huyệt cảm xúc' (Tiền, Danh tiếng, Tình yêu, Bản thân).
-2. THẾ TRẬN: Tìm 'Vũ khí chốt deal' của VIB để đánh bại MB, Vietcombank, Techcombank trong tình trạng khách đang so sánh.
-3. CHIẾN THUẬT: Theo quy tắc BANT+C (Budget, Authority, Need, Time, Confidence). Nếu deal > 1 tỷ, áp dụng thêm MEDDIC.
-
-Thông tin khách hàng:
-- Họ tên: ${name} | Nghề nghiệp: ${job} | Nhu cầu: ${need}
-- Ưu tiên: ${priority} | Phong cách: ${style} | Thu nhập: ${income}
-- Phản ứng: ${reaction} | Ghi chú: ${note}
-
-BẮT BUỘC trả lời theo định dạng JSON chuẩn (KHÔNG giải thích thêm):
+Yêu cầu trả về DUY NHẤT một khối JSON theo cấu trúc (KHÔNG lời dẫn):
 {
-  "classification": "HOT" | "WARM" | "COLD" | "POTENTIAL",
-  "insight": "Phân tích đặc điểm hành vi và tâm lý khách hàng (khoảng 30-50 từ)",
-  "meddic_qualify": "Nhận định theo MEDDIC nếu deal > 1 tỷ, nếu không thì ghi 'N/A'",
-  "hagtActions": ["Việc 1 cần làm ngay", "Việc 2 cần làm ngay", "Việc 3 cần làm ngay"],
-  "script60s": "Kịch bản gọi điện kể chuyện (Storytelling) cá nhân hóa phong cách ${style}",
-  "zaloMessage": "Tin nhắn Zalo ngắn gọn, tinh tế để gửi sau khi gọi điện.",
-  "vib_solution": "Gợi ý gói vay hoặc cách tiếp cận chốt sale của VIB (khoảng 30 từ)",
-  "pains": ["Nỗi đau 1", "Nỗi đau 2", "Nỗi đau 3"]
+  "classification": "HOT/WARM/COLD/POTENTIAL",
+  "bantc_score": { "total": 85 },
+  "insight": "Rút ra tử huyệt cảm xúc và tâm lý khách (nhóm DISC)",
+  "meddic_qualify": "Nhận định MEDDIC nếu > 1 tỷ, còn lại ghi N/A",
+  "hagtActions": ["Hành động 1", "Hành động 2", "Hành động 3"],
+  "script60s": "Kịch bản gọi điện kịch tính phong cách VIB",
+  "zaloMessage": "Tin nhắn Zalo ngắn gọn để chốt hẹn",
+  "vib_solution": "Sản phẩm VIB phù hợp nhất và ưu thế so với Bank khác",
+  "objections": ["Vấn đề 1", "Vấn đề 2"],
+  "pains": ["Nỗi đau 1", "Nỗi đau 2"]
 }`;
 
   try {
@@ -663,9 +649,7 @@ BẮT BUỘC trả lời theo định dạng JSON chuẩn (KHÔNG giải thích 
     });
 
     const data = await response.json();
-    if (!data.candidates || !data.candidates[0]) {
-      throw new Error("AI không phản hồi hoặc hết hạn mức (Quota).");
-    }
+    if (!data.candidates || !data.candidates[0]) throw new Error("AI Busy");
     
     let textResult = data.candidates[0].content.parts[0].text;
     
@@ -689,7 +673,7 @@ BẮT BUỘC trả lời theo định dạng JSON chuẩn (KHÔNG giải thích 
         name, phone, email, job, need, source, priority, style,
         contactCount, reaction, income, note,
         classification: result.classification,
-        confidence: result.confidence,
+        confidence: result.bantc_score ? result.bantc_score.total : 75,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         userId: currentUser ? currentUser.uid : 'anonymous'
       };
@@ -725,7 +709,7 @@ BẮT BUỘC trả lời theo định dạng JSON chuẩn (KHÔNG giải thích 
     
   } catch (err) {
     console.error('Classification error:', err);
-    document.getElementById('cls-badge').textContent = '❌ Lỗi phân tích';
+    document.getElementById('cls-badge').textContent = '❌ Lỗi: ' + err.message;
   }
   
   btn.textContent = '🤖 PHÂN LOẠI & TẠO KỊCH BẢN';
