@@ -624,53 +624,39 @@ async function classifyCustomer() {
   document.getElementById('cls-badge').textContent = '⏳ Đang phân tích...';
   document.getElementById('cls-insight').textContent = '—';
   
-  const prompt = `Bạn là CHUYÊN GIA TÍN DỤNG VIB. Phân tích khách hàng sau.
-Thông tin: Tên: ${name}, Nghề: ${job}, Nhu cầu: ${need}, Thu nhập: ${income}, Ghi chú: ${note}.
+  const prompt = `Bạn là Chuyên gia Tín dụng VIB. Hãy lập 'Bản đồ tác chiến' chốt deal Master cho:
+Tên: ${name}, Nghề: ${job}, Nhu cầu: ${need}, Thu nhập: ${income}, Ghi chú: ${note}.
 
-Yêu cầu trả về DUY NHẤT một khối JSON theo cấu trúc (KHÔNG lời dẫn):
+Yêu cầu trả về JSON chuẩn, KHÔNG lời dẫn:
 {
   "classification": "HOT/WARM/COLD/POTENTIAL",
   "bantc_score": { "total": 85 },
-  "insight": "Rút ra tử huyệt cảm xúc và tâm lý khách (nhóm DISC)",
-  "meddic_qualify": "Nhận định MEDDIC nếu > 1 tỷ, còn lại ghi N/A",
-  "hagtActions": ["Hành động 1", "Hành động 2", "Hành động 3"],
-  "script60s": "Kịch bản gọi điện kịch tính phong cách VIB",
-  "zaloMessage": "Tin nhắn Zalo ngắn gọn để chốt hẹn",
-  "vib_solution": "Sản phẩm VIB phù hợp nhất và ưu thế so với Bank khác",
-  "objections": ["Vấn đề 1", "Vấn đề 2"],
-  "pains": ["Nỗi đau 1", "Nỗi đau 2"]
+  "insight": "Dùng DISC & Tử huyệt cảm xúc phân tích tâm lý khách hàng",
+  "meddic_qualify": "Phân tích MEDDIC nếu deal lớn, ngược lại ghi N/A",
+  "hagtActions": ["B1: Tiếp cận", "B2: Khai thác", "B3: Chốt deal"],
+  "script60s": "Kịch bản kể chuyện cá nhân hóa phong cách ${style}",
+  "zaloMessage": "Tin nhắn Zalo chốt hẹn tinh tế",
+  "vib_solution": "Ưu thế sảm phẩm VIB so với Bank khác cho deal này",
+  "objections": ["Xử lý từ chối 1", "Xử lý từ chối 2"]
 }`;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      const msg = errorData.error ? errorData.error.message : 'Unknown API Error';
-      throw new Error(`Google API ${response.status}: ${msg}`);
-    }
+    if (!response.ok) throw new Error(`Google API ${response.status}`);
 
     const data = await response.json();
-    if (!data.candidates || !data.candidates[0]) throw new Error("AI không trả về kết quả.");
+    if (!data.candidates || !data.candidates[0]) throw new Error("AI No Response");
     
     let textResult = data.candidates[0].content.parts[0].text;
+    const match = textResult.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("JSON Format Error");
     
-    // Làm sạch chuỗi JSON một cách triệt để
-    textResult = textResult.replace(/```json/g, "").replace(/```/g, "").trim();
-    
-    // Tìm vị trí ngoặc nhọn đầu tiên và cuối cùng để trích xuất JSON chuẩn
-    const start = textResult.indexOf('{');
-    const end = textResult.lastIndexOf('}');
-    if (start === -1 || end === -1) throw new Error("AI không trả về định dạng chuẩn.");
-    textResult = textResult.substring(start, end + 1);
-
-    const result = JSON.parse(textResult);
-
-    // Hiển thị giao diện mới chuyên nghiệp
+    const result = JSON.parse(match[0]);
     renderClassifyResult(result, name);
     
     // 🔥 DUAL-SYNC: Firestore & Google Sheets
