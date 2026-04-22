@@ -11,7 +11,7 @@ const GEMINI_API_KEY = NUA_DAU + NUA_SAU;
 
 // ========== RATES CONFIGURATION (FALLBACK + SYNC) ==========
 const RATES_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz1qc9P9ZXBnyceaYrCH7a0kXSSg4eCh8zFKjM9GIPz8IWXgIiz51Q1-9pjORpskF6Oyg/exec"; // GOOGLE SHEET LÃI SUẤT CHÍNH THỨC
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxf6wl3ul9msvz0KhBkG6XkstTmgCI8DD0OeJGRa6_cXtMsLWQeST-QE9A60MJh6Swo/exec"; // BẢN LƯU DỮ LIỆU ĐA CHIỀU (V2.35)
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzAz819XP76d3IRWaa6d2HjAWI5p8wRUoF9C5Qyfx_bhmzlNKXSyFCQx0vyJu4Sodwl/exec"; // BẢN LƯU DỮ LIỆU ĐA CHIỀU MASTER (V2.40)
 
 // Dữ liệu lãi suất chuẩn 06.04.2026 (Lưới bảo vệ khi chưa có Sheets)
 const DEFAULT_VIB_RATES = {
@@ -672,22 +672,29 @@ Yêu cầu trả về JSON chuẩn, KHÔNG lời dẫn:
       db.collection('customers').add(customerData);
 
       const sheetData = {
-        destination: "ai_leads",
-        date: new Date().toLocaleDateString('vi-VN') + ' ' + new Date().toLocaleTimeString('vi-VN'),
-        customer: name,
+        destination: "ai_leads_master",
+        timestamp: new Date().toLocaleString("vi-VN"),
+        rm_name: currentUser ? (currentUser.displayName || 'RM') : 'RM',
+        customer_name: name,
         phone: phone || "—",
         email: email || "—",
+        job: job || "—",
         zalo: `https://zalo.me/${phone}`,
-        leadType: job,
-        rm: currentUser ? (currentUser.displayName || 'RM') : 'RM',
-        aiResult: `${result.classification}: ${result.insight}`
+        
+        // Dữ liệu Master AI
+        classification: result.classification || "WARM",
+        score: result.bantc_score ? result.bantc_score.total : 75,
+        vib_weapon: result.vib_solution || "Đang phân tích",
+        next_action: result.hagtActions ? result.hagtActions[0] : "Liên hệ ngay",
+        insight: result.insight || "—",
+        pains: result.objections ? result.objections.join(', ') : "—"
       };
       
       fetch(WEBHOOK_URL, {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sheetData)
-      }).then(() => console.log('✅ AI leads sync OK'));
+      }).then(() => console.log('🚀 [MASTER SYNC] Lead synced successfully!'));
 
       // 2. Sync to Firestore (Dành riêng cho Dashboard Quản trị)
       db.collection('classifications').add({
