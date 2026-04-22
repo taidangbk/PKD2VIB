@@ -6,7 +6,7 @@ console.log("🚀 app.js v2.40 loaded successfully!");
 // ========== AI CONFIGURATION ==========
 // API Key được tách đôi để bảo mật cơ bản khi đẩy lên GitHub
 const NUA_DAU = "AIzaSy";
-const NUA_SAU = "CKvH3sOSFpwYmXgWMzCaXFA7jbNkg7WTQ";
+const NUA_SAU = "DuxjUvvjkDJGH3Huw--6d1UJ4x9N6U13o";
 const GEMINI_API_KEY = NUA_DAU + NUA_SAU;
 
 // ========== RATES CONFIGURATION (FALLBACK + SYNC) ==========
@@ -648,8 +648,14 @@ Yêu cầu trả về DUY NHẤT một khối JSON theo cấu trúc (KHÔNG lờ
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      const msg = errorData.error ? errorData.error.message : 'Unknown API Error';
+      throw new Error(`Google API ${response.status}: ${msg}`);
+    }
+
     const data = await response.json();
-    if (!data.candidates || !data.candidates[0]) throw new Error("AI Busy");
+    if (!data.candidates || !data.candidates[0]) throw new Error("AI không trả về kết quả.");
     
     let textResult = data.candidates[0].content.parts[0].text;
     
