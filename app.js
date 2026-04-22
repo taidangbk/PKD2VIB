@@ -11,7 +11,7 @@ const GEMINI_API_KEY = NUA_DAU + NUA_SAU;
 
 // ========== RATES CONFIGURATION (FALLBACK + SYNC) ==========
 const RATES_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz1qc9P9ZXBnyceaYrCH7a0kXSSg4eCh8zFKjM9GIPz8IWXgIiz51Q1-9pjORpskF6Oyg/exec"; // GOOGLE SHEET LÃI SUẤT CHÍNH THỨC
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzAz819XP76d3IRWaa6d2HjAWI5p8wRUoF9C5Qyfx_bhmzlNKXSyFCQx0vyJu4Sodwl/exec"; // BẢN LƯU DỮ LIỆU ĐA CHIỀU MASTER (V2.40)
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzic_SJBJwVtCS3gqfIprFGwQ_yMMyEzA3eKGXBkpxQlZDwObxNtcACzRrYrS7Hffmf/exec"; // BẢN DASHBOARD MASTER (V2.40)
 
 // Dữ liệu lãi suất chuẩn 06.04.2026 (Lưới bảo vệ khi chưa có Sheets)
 const DEFAULT_VIB_RATES = {
